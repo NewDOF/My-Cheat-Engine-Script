@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable UsesMono="1" CheatEngineTableVersion="52">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>2086</ID>
+      <Description>""Mono" Launcher"</Description>
+      <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[enable]
+
+{$lua}
+LaunchMonoDataCollector()
+
+{$asm}
+globalalloc(EXPValue, 4)
+globalalloc(ItemAddress, 4)
+globalalloc(StatusAddress, 4)
+globalalloc(TreasuryValue, 4)
+
+EXPValue:
+dd (int)9999
+
+ItemAddress:
+dd 0
+
+StatusAddress:
+dd 0
+
+TreasuryValue:
+dd (int)9999999
+
+[disable]
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>2106</ID>
+          <Description>"================"</Description>
+          <Color>CCCCCC</Color>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>23</ID>
+          <Description>"Gain EXP after battle"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+aobscanregion(ExpAddress,Battle:kill_exp,Battle:kill_exp+5D,89 86 A8 02 00 00)  // should be unique in this function
+alloc(newmem,$1000,ExpAddress)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov rax,[EXPValue]
+  mov [rsi+000002A8],rax
+  jmp return
+
+ExpAddress:
+  jmp newmem
+  nop
+return:
+registersymbol(ExpAddress)
+
+[DISABLE]
+
+ExpAddress:
+  db 89 86 A8 02 00 00
+
+unregistersymbol(ExpAddress)
+unregistersymbol(ExpAddressValue)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Battle:kill_exp+52
+
+Battle:kill_exp+21: 81 E2 FF 1F 00 00              - and edx,00001FFF
+Battle:kill_exp+27: 48 8B 0C 25 E0 31 75 06        - mov rcx,[067531E0]
+Battle:kill_exp+2f: D1 E2                          - shl edx,1
+Battle:kill_exp+31: 48 83 EC 20                    - sub rsp,20
+Battle:kill_exp+35: 49 BB 60 31 DF 07 00 00 00 00  - mov r11,Sys:getWord
+Battle:kill_exp+3f: 41 FF D3                       - call r11
+Battle:kill_exp+42: 48 83 C4 20                    - add rsp,20
+Battle:kill_exp+46: 48 8B C8                       - mov rcx,rax
+Battle:kill_exp+49: 48 63 86 A8 02 00 00           - movsxd  rax,dword ptr [rsi+000002A8]
+Battle:kill_exp+50: 03 C1                          - add eax,ecx
+// ---------- INJECTING HERE ----------
+Battle:kill_exp+52: 89 86 A8 02 00 00              - mov [rsi+000002A8],eax
+// ---------- DONE INJECTING  ----------
+Battle:kill_exp+58: 48 8B 75 F8                    - mov rsi,[rbp-08]
+Battle:kill_exp+5c: C9                             - leave 
+Battle:kill_exp+5d: C3                             - ret 
+Battle:kill_exp+5e: BA 5E 00 00 00                 - mov edx,0000005E
+Battle:kill_exp+63: B9 78 06 00 02                 - mov ecx,02000678
+Battle:kill_exp+68: 49 BB D0 1C 7C 07 00 00 00 00  - mov r11,00000000077C1CD0
+Battle:kill_exp+72: 41 FF D3                       - call r11
+09FEB085: 00 00                          - add [rax],al
+09FEB087: 00 00                          - add [rax],al
+09FEB089: 00 00                          - add [rax],al
+}
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>16</Key>
+                <Key>192</Key>
+              </Keys>
+              <ID>0</ID>
+              <ActivateSound TTS="EN">{MRDescription} Activated</ActivateSound>
+              <DeactivateSound TTS="EN">{MRDescription} Deactivated</DeactivateSound>
+            </Hotkey>
+          </Hotkeys>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>7</ID>
+              <Description>"EXP"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>EXPValue</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2095</ID>
+          <Description>"Change treasury balance"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+aobscanRegion(TreasuryAddress,Core:budget_sep+A0,Core:budget_sep+e0,48 8B C2 C1 F8 1F)  // should be unique in this function
+alloc(newmem,$1000,TreasuryAddress)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov rdx,[TreasuryValue]
+  mov [rax+6a8],rdx
+  sar eax,1F
+  jmp return
+
+TreasuryAddress:
+  jmp newmem
+  nop
+return:
+registersymbol(TreasuryAddress)
+
+[DISABLE]
+
+TreasuryAddress:
+  db 48 8B C2 C1 F8 1F
+
+unregistersymbol(TreasuryAddress)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Core:budget_sep+bc
+
+Core:budget_sep+8a: 39 50 18                 - cmp [rax+18],edx
+Core:budget_sep+8d: 0F 86 8B 01 00 00        - jbe Core:budget_sep+21e
+Core:budget_sep+93: 48 8D 44 90 20           - lea rax,[rax+rdx*4+20]
+Core:budget_sep+98: 48 63 00                 - movsxd  rax,dword ptr [rax]
+Core:budget_sep+9b: C1 E0 08                 - shl eax,08
+Core:budget_sep+9e: 03 C8                    - add ecx,eax
+Core:budget_sep+a0: 48 8B 04 25 28 1F 41 19  - mov rax,[19411F28]
+Core:budget_sep+a8: 81 78 18 A2 01 00 00     - cmp [rax+18],000001A2
+Core:budget_sep+af: 0F 86 62 01 00 00        - jbe Core:budget_sep+217
+Core:budget_sep+b5: 48 63 90 A8 06 00 00     - movsxd  rdx,dword ptr [rax+000006A8]
+// ---------- INJECTING HERE ----------
+Core:budget_sep+bc: 48 8B C2                 - mov rax,rdx
+// ---------- DONE INJECTING  ----------
+Core:budget_sep+bf: C1 F8 1F                 - sar eax,1F
+Core:budget_sep+c2: C1 E8 18                 - shr eax,18
+Core:budget_sep+c5: 03 C2                    - add eax,edx
+Core:budget_sep+c7: 48 8B F8                 - mov rdi,rax
+Core:budget_sep+ca: C1 FF 08                 - sar edi,08
+Core:budget_sep+cd: 48 8B C7                 - mov rax,rdi
+Core:budget_sep+d0: 3B C1                    - cmp eax,ecx
+Core:budget_sep+d2: 0F 8C 22 00 00 00        - jl Core:budget_sep+fa
+Core:budget_sep+d8: B9 10 5A 44 19           - mov ecx,19445A10
+Core:budget_sep+dd: 48 63 09                 - movsxd  rcx,dword ptr [rcx]
+}
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>16</Key>
+                <Key>49</Key>
+              </Keys>
+              <ID>0</ID>
+              <ActivateSound TTS="EN">{MRDescription} Activated</ActivateSound>
+              <DeactivateSound TTS="EN">{MRDescription} Deactivated</DeactivateSound>
+            </Hotkey>
+          </Hotkeys>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>2107</ID>
+              <Description>"Just talk to the intelligence officer/vault keeper"</Description>
+              <Color>0080FF</Color>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2108</ID>
+              <Description>"located on the Avalon Palace 2F west side."</Description>
+              <Color>0080FF</Color>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2091</ID>
+              <Description>"Treasury"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>TreasuryValue</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2081</ID>
+          <Description>"================"</Description>
+          <Color>CCCCCC</Color>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>8</ID>
+          <Description>"Item Address Scaner"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+aobScanRegion(ItemAddressScaner,Menu:make_item_mess1+61,Menu:make_item_mess1+A1,48 8D 44 88 20 4C 63 30)  // should be unique in this function
+alloc(newmem,$1000,ItemAddressScaner)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  lea rax,[rax+rcx*4+20]
+  mov [ItemAddress],rax
+  jmp return
+
+ItemAddressScaner:
+  jmp newmem
+
+return:
+registersymbol(ItemAddressScaner)
+
+[DISABLE]
+
+ItemAddressScaner:
+  db 48 8D 44 88 20
+
+unregistersymbol(ItemAddressScaner)
+
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Menu:make_item_mess1+7e
+
+Menu:make_item_mess1+55: 41 C1 E6 02                    - shl r14d,02
+Menu:make_item_mess1+59: 48 8B 04 25 28 1F 11 19        - mov rax,[19111F28]
+Menu:make_item_mess1+61: 49 63 97 34 04 00 00           - movsxd  rdx,dword ptr [r15+00000434]
+Menu:make_item_mess1+68: 49 8B CE                       - mov rcx,r14
+Menu:make_item_mess1+6b: 03 CA                          - add ecx,edx
+Menu:make_item_mess1+6d: D1 E1                          - shl ecx,1
+Menu:make_item_mess1+6f: 83 C1 21                       - add ecx,21
+Menu:make_item_mess1+72: 48 63 C9                       - movsxd  rcx,ecx
+Menu:make_item_mess1+75: 39 48 18                       - cmp [rax+18],ecx
+Menu:make_item_mess1+78: 0F 86 36 00 00 00              - jbe Menu:make_item_mess1+b4
+// ---------- INJECTING HERE ----------
+Menu:make_item_mess1+7e: 48 8D 44 88 20                 - lea rax,[rax+rcx*4+20]
+// ---------- DONE INJECTING  ----------
+Menu:make_item_mess1+83: 4C 63 30                       - movsxd  r14,dword ptr [rax]
+Menu:make_item_mess1+86: 4C 8D 4E 10                    - lea r9,[rsi+10]
+Menu:make_item_mess1+8a: 49 8B CF                       - mov rcx,r15
+Menu:make_item_mess1+8d: 49 8B D6                       - mov rdx,r14
+Menu:make_item_mess1+90: 4C 8B C7                       - mov r8,rdi
+Menu:make_item_mess1+93: 48 83 EC 20                    - sub rsp,20
+Menu:make_item_mess1+97: 49 BB 30 A3 DF 20 00 00 00 00  - mov r11,Menu:item_mess1_disp
+Menu:make_item_mess1+a1: 41 FF D3                       - call r11
+Menu:make_item_mess1+a4: 48 83 C4 20                    - add rsp,20
+Menu:make_item_mess1+a8: 48 8D 65 E0                    - lea rsp,[rbp-20]
+}
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>16</Key>
+                <Key>192</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+          </Hotkeys>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>2110</ID>
+              <Description>"Select the item in inventory menu that you want to edit,"</Description>
+              <Color>0080FF</Color>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2109</ID>
+              <Description>"than wait 5 ~ 10 sec until the script get the memory address."</Description>
+              <Color>0080FF</Color>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2087</ID>
+              <Description>"Item address"</Description>
+              <DropDownList DisplayValueAsItem="1">00:長剣
+01:ゴブリンソード
+02:鋼鉄の剣
+03:ワームスレイヤー
+04:ハルモニアの剣
+05:三日月刀
+06:スペクターソード
+07:炎の剣
+08:スプラッシャー
+09:黒曜石の剣
+0A:幻獣剣
+0B:竜鱗の剣
+0C:セブンスソード
+0D:風神剣
+0E:大剣
+0F:クレイモア
+10:ツヴァイハンダー
+11:青竜刀
+12:トリプルソード
+13:クロスクレイモア
+14:名刀千鳥
+15:デイブレード
+16:ムーンライト
+17:オートクレール
+18:妖刀龍光
+19:ヴォーパルソード
+1A:バスタードソード
+1B:カタナ
+1C:戦斧
+1D:ブロードアクス
+1E:レディホーク
+1F:バイキングアクス
+20:トアマリンの斧
+21:グレートアクス
+22:ヴォーパルアクス
+23:ジルコンの斧
+24:アメジストの斧
+25:デストロイヤー
+26:メイス
+27:バトルハンマー
+28:シルバーハンマー
+29:タンブラーロッド
+2A:スリッジハンマー
+2B:スカルロッド
+2C:アンバーメイス
+2D:セージロッド
+2E:リバティスタッフ
+2F:ホーリーバスター
+30:棍棒
+31:コムルーンハンマー
+32:ロングスピア
+33:トライデント
+34:なぎなた
+35:ハルベルト
+36:金剛石の槍
+37:シャープグレイブ
+38:ランサー
+39:黒曜石の槍
+3A:青水晶の槍
+3B:重水の槍
+3C:竜槍ゲイボルグ
+3D:神槍ロンギヌス
+3E:ウコムのほこ
+3F:古い槍
+40:フルーレ
+41:レイピア
+42:エペ
+43:ロブオーメン
+44:カットラス
+45:エストック
+46:ソウルセイバー
+47:赤水晶のロッド
+48:イロリナの星
+49:大地の剣
+4A:長弓
+4B:強化弓
+4C:ウインクキラー
+4D:剛弓
+4E:グリムリーパー
+4F:星天弓
+50:エルダーボウ
+51:エリスの弓
+52:大弓
+53:ダート
+54:ボーンダート
+55:ハリ(12)
+56:ハリ(16)
+57:爪
+58:爪(11)
+59:爪(16)
+5A:爪(22)
+5B:爪(33)
+5C:爪(44)
+5D:爪(55)
+5E:傷薬
+5F:高級傷薬
+60:フェイスマスク
+61:オープンヘルム
+62:グリークヘルム
+63:クロースヘルム
+64:ライオンヘッド
+65:火神防御輪
+66:マイティヘルム
+67:アイアンウィル
+68:ヘッドバンド
+69:ストローベレー
+6A:とんがり帽子
+6B:水鳥の帽子
+6C:マジックハット
+6D:ラビットイヤー
+6E:虹の水環
+6F:最強の帽子
+70:レザーアーマー
+71:リジッドレザー
+72:ブリガンディ
+73:エルブンスキン
+74:タイガーアーマー
+75:ラビットアーマー
+76:ワニ革の鎧
+77:セブンスアーマー
+78:鉄の鎧
+79:鋼鉄の鎧
+7A:白銀のチェイル
+7B:超銅金の鎧
+7C:ハルモニアの鎧
+7D:竜鱗の鎧
+7E:黒のガラドリエル
+7F:赤熱の鱗
+80:魔道師のローブ
+81:玉虫のローブ
+82:星くずのローブ
+83:月影のローブ
+84:太陽のローブ
+85:宵闇のローブ
+86:アバロンの聖衣
+87:識者のローブ
+88:プロテクトスーツ
+89:ラメラースーツ
+8A:スウェットスーツ
+8B:プレートスーツ
+8C:ヘビースーツ
+8D:コンバットスーツ
+8E:ハルモニアスーツ
+8F:ヒドラスーツ
+90:ナックルカバー
+91:ガントレット
+92:ヴァンブレイス
+93:マスタリーグラブ
+94:白手袋
+95:ミトン
+96:怪力手袋
+97:なベつかみ
+98:革のすね当て
+99:鋼の具足
+9A:白銀の具足
+9B:クイックシルバー
+9C:ラバーソウル
+9D:マジックブーツ
+9E:ヒールのサンダル
+9F:フェザーブーツ 
+A0:ダブレット
+A1:武道着
+A2:防護服
+A3:強化服
+A4:力帯
+A5:プリマチュチュ
+A6:断熱服
+A7:風花のショール
+A8:シルバーリング
+A9:キャッツアイ
+AA:スターストーン
+AB:魔石の指輪
+AC:精霊の指輪
+AD:キャンディリング
+AE:ニーベルの指輪
+AF:メロウリング
+B0:クリスナイフ
+B1:ラビットフット
+B2:ソーモンの指輪
+B3:ダッシュリング
+B4:スキルリング
+B5:ドロップリング
+B6:火の指輪
+B7:水の指輪
+B8:風の指輪
+B9:地の指輪
+BA:百鬼の指輪
+BB:パワーリング
+BC:マジックリング
+BD:クイックリング
+BE:シーフリング
+BF:インタリオリング
+C0:大盾
+C1:金属盾
+C2:鋼鉄の盾
+C3:黒曜石の盾
+C4:超銅金の盾
+C5:竜鱗の盾
+C6:水鏡の盾
+C7:聖騎士の盾
+C8:レザーガード
+C9:バックラー
+CA:メタルガード
+CB:ハルモニアガード
+CC:ターゲット
+CD:アースガード
+CE:ウィルガード
+CF:ワンダーバングル
+D0:生命力回復
+D1:生命力回復
+D2:生命力回復
+D3:術酒
+D4:霊酒
+D5:神酒
+D6:古い術酒
+D7:皇帝液
+D8:リラックスハーブ
+D9:フレッシュハーブ
+DA:情熱の香水
+DB:神秘の香水
+DC:古い香水
+DD:万能薬
+DE:結界石
+DF:森の精気
+E0:大地の精気
+E1:10クラウン
+E2:千羽ヅル
+E3:小石
+E4:小石
+E5:小石
+E6:小石
+E7:クィーンの証
+E8:破の記憶
+E9:邪の記憶
+EA:滅の記憶
+EB:罪の記憶
+EC:運命の石
+ED:ゴブリン陣形書
+EE:海風貝
+EF:古代魔術書
+F0:石船
+F1:人力風起こし
+F2:卵のから
+F3:海ツバメの巣
+F4:アクア湖の水
+F5:人魚薬
+F6:アイスシード
+F7:月光のクシ
+F8:魔石のかけら
+F9:モールのつぼ
+FA:詩人のホルン
+FB:詩人のフルート
+FC:詩人のファゴット
+FD:詩人のコンガ
+FE:詩人のギター
+FF:(無し)
+</DropDownList>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>[ItemAddress]</Address>
+              <Hotkeys>
+                <Hotkey>
+                  <Action>Increase Value</Action>
+                  <Keys>
+                    <Key>33</Key>
+                  </Keys>
+                  <Value>1</Value>
+                  <ID>0</ID>
+                </Hotkey>
+                <Hotkey>
+                  <Action>Decrease Value</Action>
+                  <Keys>
+                    <Key>34</Key>
+                  </Keys>
+                  <Value>1</Value>
+                  <ID>1</ID>
+                </Hotkey>
+              </Hotkeys>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>9</ID>
+              <Description>"Quantity address"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>[ItemAddress]+4</Address>
+              <Hotkeys>
+                <Hotkey>
+                  <Action>Increase Value</Action>
+                  <Keys>
+                    <Key>107</Key>
+                  </Keys>
+                  <Value>1</Value>
+                  <ID>0</ID>
+                </Hotkey>
+                <Hotkey>
+                  <Action>Decrease Value</Action>
+                  <Keys>
+                    <Key>109</Key>
+                  </Keys>
+                  <Value>1</Value>
+                  <ID>1</ID>
+                </Hotkey>
+              </Hotkeys>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2082</ID>
+          <Description>"================"</Description>
+          <Color>CCCCCC</Color>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2146</ID>
+          <Description>"👇 Panraven's Script"</Description>
+          <Color>0080FF</Color>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>1994</ID>
+          <Description>"High chance skill learnt"</Description>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+
+aobscanRegion(SkillLearnt,Battle:check_get,Battle:check_get+49,55 48 8B EC 56)  // should be unique in this function
+alloc(newmem,$1000,SkillLearnt)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+xor eax,eax
+inc eax
+ret
+  jmp return
+
+SkillLearnt:
+  jmp newmem
+
+return:
+registersymbol(SkillLearnt)
+
+[DISABLE]
+
+SkillLearnt:
+  db 55 48 8B EC 56
+
+unregistersymbol(SkillLearnt)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Battle:check_get
+
+21B711DB: 00 45 00     - add [rbp+00],al
+21B711DE: 00 00        - add [rax],al
+21B711E0: 54           - push rsp
+21B711E1: 00 00        - add [rax],al
+21B711E3: 00 01        - add [rcx],al
+21B711E5: 04 01        - add al,01
+21B711E7: 00 04 22     - add [rdx],al
+21B711EA: 00 00        - add [rax],al
+21B711EC: 00 00        - add [rax],al
+21B711EE: 00 00        - add [rax],al
+// ---------- INJECTING HERE ----------
+Battle:check_get: 55           - push rbp
+// ---------- DONE INJECTING  ----------
+Battle:check_get+1: 48 8B EC     - mov rbp,rsp
+Battle:check_get+4: 56           - push rsi
+Battle:check_get+5: 57           - push rdi
+Battle:check_get+6: 41 57        - push r15
+Battle:check_get+8: 48 83 EC 08  - sub rsp,08
+Battle:check_get+c: 48 8B F1     - mov rsi,rcx
+Battle:check_get+f: 33 FF        - xor edi,edi
+Battle:check_get+11: 45 33 FF     - xor r15d,r15d
+Battle:check_get+14: EB 26        - jmp Battle:check_get+3c
+Battle:check_get+16: 66 90        - nop 2
+}
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>16</Key>
+                <Key>50</Key>
+              </Keys>
+              <ID>0</ID>
+              <ActivateSound TTS="EN">{MRDescription} Activated</ActivateSound>
+              <DeactivateSound TTS="EN">{MRDescription} Deactivated</DeactivateSound>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>1976</ID>
+          <Description>"No JPWP consume in battle"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+aobscanRegion(ConsumeNoJPWP,Battle:set_exp,Battle:set_exp+1C3,48 63 96 ?? ?? 00 00 2b ca)  // should be unique in this function
+
+ConsumeNoJPWP+07:
+db 90 90
+
+
+[DISABLE]
+aobscanRegion(ConsumeNoJPWP,Battle:set_exp,Battle:set_exp+1C3,48 63 96 ?? ?? 00 00 90 90)  // should be unique in this function
+
+ConsumeNoJPWP+07:
+db 2b ca
+
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>1989</ID>
+          <Description>"No item consume in menu"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+aobscanRegion(ConsumeNoItemUse,Menu:_item_use_efect,Menu:_item_use_efect+100,48 63 08 ff c9)  // should be unique in this function
+
+ConsumeNoItemUse+03:
+db 90 90
+
+
+[DISABLE]
+aobscanRegion(ConsumeNoItemUse,Menu:_item_use_efect,Menu:_item_use_efect+100,48 63 08 90 90)
+
+ConsumeNoItemUse+03:
+db ff c9
+
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2104</ID>
+          <Description>"================"</Description>
+          <Color>CCCCCC</Color>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+  <Comments>Info about this table:
+</Comments>
+</CheatTable>

@@ -1,1 +1,1 @@
-rs2e.CT     ------           Romancing Saga 2 remaster (2017)
+rs2.CT     ------           Romancing Saga 2 remaster (2017)

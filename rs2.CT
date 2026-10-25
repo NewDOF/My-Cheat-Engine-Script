@@ -16,6 +16,7 @@ globalalloc(EXPValue, 4)
 globalalloc(ItemAddress, 4)
 globalalloc(StatusAddress, 4)
 globalalloc(TreasuryValue, 4)
+globalalloc(EVPointAddress, 4)
 
 EXPValue:
 dd (int)9999
@@ -28,6 +29,10 @@ dd 0
 
 TreasuryValue:
 dd (int)9999999
+
+EVPointAddress:
+dd 0
+
 
 [disable]
 </AssemblerScript>
@@ -619,6 +624,119 @@ FF:(無し)
                   <ID>1</ID>
                 </Hotkey>
               </Hotkeys>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2149</ID>
+          <Description>"EventPoint Address Scaner"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : rs2.exe
+  Version: 
+  Date   : 2026-10-25
+  Author : Windows10
+  Description : 
+
+  &lt;Optional info&gt;
+}
+
+[ENABLE]
+
+aobscanregion(EVPointAddressScaner,Menu:load_a2+9a0,Menu:load_a2+a30,48 8D 44 90 20)  // should be unique in this function
+alloc(newmem,$1000,EVPointAddressScaner)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  mov [EVPointAddress],rax
+  lea rax,[rax+rdx*4+20]
+  jmp return
+
+EVPointAddressScaner:
+  jmp newmem
+return:
+registersymbol(EVPointAddressScaner)
+
+[DISABLE]
+
+EVPointAddressScaner:
+  db 48 8D 44 90 20
+
+unregistersymbol(EVPointAddressScaner)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: Menu:load_a2+9da
+
+Menu:load_a2+9b1: FF C3                 - inc ebx
+Menu:load_a2+9b3: 4D 63 C0              - movsxd  r8,r8d
+Menu:load_a2+9b6: 44 39 41 18           - cmp [rcx+18],r8d
+Menu:load_a2+9ba: 0F 86 5D 0A 00 00     - jbe Menu:load_a2+141d
+Menu:load_a2+9c0: 4A 8D 4C 01 20        - lea rcx,[rcx+r8+20]
+Menu:load_a2+9c5: 0F B6 09              - movzx ecx,byte ptr [rcx]
+Menu:load_a2+9c8: 81 E1 FF 00 00 00     - and ecx,000000FF
+Menu:load_a2+9ce: 48 63 D2              - movsxd  rdx,edx
+Menu:load_a2+9d1: 39 50 18              - cmp [rax+18],edx
+Menu:load_a2+9d4: 0F 86 39 0A 00 00     - jbe Menu:load_a2+1413
+// ---------- INJECTING HERE ----------
+Menu:load_a2+9da: 48 8D 44 90 20        - lea rax,[rax+rdx*4+20]
+// ---------- DONE INJECTING  ----------
+Menu:load_a2+9df: 89 08                 - mov [rax],ecx
+Menu:load_a2+9e1: 41 FF C7              - inc r15d
+Menu:load_a2+9e4: 45 3B FC              - cmp r15d,r12d
+Menu:load_a2+9e7: 0F 8C F3 FD FF FF     - jl Menu:load_a2+7e0
+Menu:load_a2+9ed: 41 FF C6              - inc r14d
+Menu:load_a2+9f0: E9 93 FD FF FF        - jmp Menu:load_a2+788
+Menu:load_a2+9f5: 0F B6 86 C0 07 00 00  - movzx eax,byte ptr [rsi+000007C0]
+Menu:load_a2+9fc: 85 C0                 - test eax,eax
+Menu:load_a2+9fe: 0F 84 A0 03 00 00     - je Menu:load_a2+da4
+Menu:load_a2+a04: 33 FF                 - xor edi,edi
+}
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>16</Key>
+                <Key>49</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+          </Hotkeys>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>2158</ID>
+              <Description>"Automatically scan addresses after loading save data"</Description>
+              <Color>0080FF</Color>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2150</ID>
+              <Description>"Event Point"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Binary</VariableType>
+              <BitStart>0</BitStart>
+              <BitLength>4</BitLength>
+              <ShowAsBinary>0</ShowAsBinary>
+              <Address>[EVPointAddress]+26c</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2151</ID>
+              <Description>"Current Generation Battle Count"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>2 Bytes</VariableType>
+              <Address>[EVPointAddress]+270</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>2157</ID>
+              <Description>"Total Battle Count"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>[EVPointAddress]+AD8</Address>
             </CheatEntry>
           </CheatEntries>
         </CheatEntry>
